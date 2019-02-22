@@ -22,7 +22,9 @@ public class App
         ){
             System.out.println("please input your reimbursement request information, seperated by \", \" \n(id, money, manager)");
             String input = br.readLine();
-            System.out.println("You input: ["+input+"]");
+            //System.out.println("Your input: ["+input+"]");
+
+            // Use Scanner to deliniate
             Scanner scan = new Scanner(input);
             scan.useDelimiter(", ");
 

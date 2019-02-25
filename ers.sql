@@ -26,6 +26,7 @@ CREATE TABLE employees
 CREATE TABLE reimbursement_requests
 (
 	id SERIAL NOT NULL,
+	amount int NOT NULL,
 	employee_id int NOT NULL,
 	isResolved BOOLEAN DEFAULT false NOT NULL,
 	isPending BOOLEAN DEFAULT true NOT NULL,

@@ -5,10 +5,6 @@ import java.io.InputStreamReader;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
     public static void main( String[] args )
@@ -31,6 +27,7 @@ public class App
             String id = scan.next();
             String money = scan.next();
             String manager = scan.next();
+            scan.close();
 
             System.out.println(id +" "+ money + " " + manager);
 

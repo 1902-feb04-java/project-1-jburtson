@@ -7,6 +7,7 @@
   <groupId>com.revature</groupId>
   <artifactId>proj1</artifactId>
   <version>0.1.0</version>
+  <packaging>war</packaging>
 
   <name>proj1</name>
   <!-- FIXME change it to the project's website -->

@@ -13,23 +13,44 @@ public class Cli {
             input = scan.nextLine();
             switch (input){
                 case "request":
-                request();
+                if (request())
+                	System.out.println("Reimbursment request successful.");
+                else
+                	System.out.println("FAILURE: Problem with reimbursment request.");
                 break;
+                
                 case "login":
                 login();
                 break;
+                
                 default:
                 break;
             }
         } while(!input.equals("q"));
     }
+    
     // should return a Reimbursement
-    private static void request(){
+    private static boolean request(){
         System.out.println("please input your reimbursement request information");
-        System.out.println("id?");
-        String id = scan.nextLine();
+        System.out.println("amount?");
+        String amountInput = scan.nextLine();
+        // Ideally, user should be already logged in, so the employee_id should just be id of the signed in user
+        System.out.println("employee id?");
+        String employee_idInput = scan.nextLine();
+        
+        try {
+        	int amount = Integer.parseInt(amountInput);
+            int employee_id = Integer.parseInt(employee_idInput);
+            Reimbursement reimbursement = new Reimbursement(amount,employee_id);
+            //reimbursement.insertSelf(statement);
+        }catch(NumberFormatException nfe) {
+        	nfe.printStackTrace();
+        	return false;
+        }
+        return true;
     }
-    private static void login(){
+    
+    private static boolean login(){
         System.out.println("please input your username");
         String username = scan.nextLine();
         System.out.println("please input your password");
@@ -40,5 +61,6 @@ public class Cli {
             passwordHidden.append('*');
         }
         System.out.println("Username: "+username+"\nPassword: "+passwordHidden);
+        return true;
     }
 }

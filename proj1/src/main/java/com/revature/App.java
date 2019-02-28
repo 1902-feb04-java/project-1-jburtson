@@ -10,30 +10,85 @@ public class App
 {
     public static void main( String[] args )
     {
-        String url = "jdbc:postgresql://localhost:5432/postgres1";
-		String username = "postgres";
-        String password = "EM0T0tron123";
         
-        try (Connection connection = DriverManager.getConnection(url,username,password)){
-			Statement statement = connection.createStatement();
+        try{
+			ConnectionSQL connect = new ConnectionSQL();
+			Statement statement = connect.getStatement();
 			
-			String sql = "SET search_path TO proj1, public";
-			statement.execute(sql);
+			Employee employee = testEmployee(statement, "user", "password123", "first", "last", false);
+			Manager manager = testManager(statement, "user", "password123", "first", "last", false);
+			Reimbursement req = testReimbursement(statement, 0, employee.getId(), manager.getId(), true, true);
+			employee.deleteSelf(statement);
+			manager.deleteSelf(statement);
 			
-			sql = "INSERT INTO employees (username, password, first_name, last_name) " +
-	                   "VALUES ('user', 'password123', 'John', 'Smith')";
-			//statement.executeUpdate(sql);
-			
-			ResultSet rs = statement.executeQuery("SELECT * FROM employees");
-			while (rs.next()) {
-				System.out.println("id: " + rs.getString("id") +
-						", name:"+ rs.getString("first_name") +" "+rs.getString("last_name"));
-			}
-			rs.close();
+			connect.close();
 		} catch (SQLException e) {
+			System.err.println("ERROR");
 			e.printStackTrace();
         }
         
-        Cli.run();
+        //Cli.run();
     }
+	public static Employee testEmployee(Statement statement, String username, String password, String firstName, String lastName, boolean shouldDelete) throws SQLException {
+    	Employee worker = new Employee(username,password,firstName,lastName);
+    	worker.insertSelf(statement);
+    	int employeeId = worker.getId();
+    	System.out.println("New employee id: "+employeeId);
+		
+		ResultSet rs = statement.executeQuery("SELECT * FROM employees");
+		while (rs.next()) {
+			System.out.println("id: " + rs.getString("id") +
+					", name: "+ rs.getString("first_name") +" "+rs.getString("last_name"));
+		}
+		rs.close();
+		if (shouldDelete) {
+			if(worker.deleteSelf(statement)) {
+				System.out.println("Successfully deleted");
+			}
+		}
+		return worker;
+    }
+    public static Manager testManager(Statement statement, String username, String password, String firstName, String lastName, boolean shouldDelete) throws SQLException {
+    	Manager worker = new Manager(username,password,firstName,lastName);
+    	worker.insertSelf(statement);
+    	int managerId = worker.getId();
+    	System.out.println("New manager id: "+managerId);
+		
+		ResultSet rs = statement.executeQuery("SELECT * FROM managers");
+		while (rs.next()) {
+			System.out.println("id: " + rs.getString("id") +
+					", name: "+ rs.getString("first_name") +" "+rs.getString("last_name"));
+		}
+		rs.close();
+		if (shouldDelete) {
+			if(worker.deleteSelf(statement)) {
+				System.out.println("Successfully deleted");
+			}
+		}
+		return worker;
+    }
+    public static Reimbursement testReimbursement(Statement statement, int amount, int employeeId, int managerId, boolean isApproved, boolean shouldDelete) throws SQLException {
+    	Reimbursement req = new Reimbursement(amount, employeeId);
+    	req.insertSelf(statement);
+    	int reqId = req.getId();
+    	System.out.println("New request id: "+reqId);
+		
+    	// resolve request
+    	req.resolve(managerId, isApproved);
+    	System.out.println("request approved: "+req.getIsApproved());
+    	
+		ResultSet rs = statement.executeQuery("SELECT * FROM reimbursement_requests");
+		while (rs.next()) {
+			System.out.println("id: " + rs.getString("id") +
+					", amount: "+ rs.getInt("amount") +
+					", employee_id: "+rs.getInt("employee_id"));
+		}
+		rs.close();
+		if (shouldDelete) {
+			if(req.deleteSelf(statement)) {
+				System.out.println("Successfully deleted");
+			}
+		}
+		return req;
+	}
 }

@@ -8,7 +8,7 @@ import java.sql.Statement;
 public class ConnectionSQL {
 	static final String url = "jdbc:postgresql://localhost:5432/postgres1";
 	static final String username = "postgres";
-	static final String password = "EM0T0tron123";
+	static final String password = "password123";
 	static final String schema = "proj1";
 	static final boolean needsSchema = true;
 	private Connection connection;

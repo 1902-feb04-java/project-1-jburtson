@@ -12,14 +12,11 @@ import javax.servlet.http.HttpSession;
 public class EmployeeServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//HttpSession session = request.getSession();
-		// if no user logged in, redirect to login.html
+		HttpSession session = request.getSession(false);
+		// check if there is a session, aka if someone is logged in already
 		PrintWriter out = response.getWriter();
-		out.println("<h1>Log in!</h1>");
+		out.println("<p> Welcome to Employee page </p>");
+		out.println("<a href=\"logout\">Logout</a>");
 		out.close();
-	}
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request,response);
 	}
 }

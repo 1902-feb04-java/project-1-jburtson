@@ -7,6 +7,7 @@ import java.sql.Statement;
 public class Reimbursement {
     private int id;
     private int amount;
+    private String description;
     private int employee_id;
     private boolean isResolved;
     private boolean isPending;
@@ -16,8 +17,12 @@ public class Reimbursement {
     // receipt_img
 
     public Reimbursement(int amount, int employee_id){
-        this.amount = amount;
+        this(amount, employee_id, "");
+    }
+    public Reimbursement(int amount, int employee_id, String description){
+    	this.amount = amount;
         this.employee_id = employee_id;
+        this.description = description;
         this.isResolved = false;
         this.isPending = true;
         // need to run insertSelf in order to get id
@@ -26,8 +31,8 @@ public class Reimbursement {
     
     public int insertSelf(Statement statement) {
     	if (!isInserted) {
-    		String sql = "INSERT INTO reimbursement_requests (amount, employee_id) " +
-                    "VALUES ("+amount+", "+employee_id+")";
+    		String sql = "INSERT INTO reimbursement_requests (amount, employee_id, description) " +
+                    "VALUES ("+amount+", "+employee_id+", '"+description+"')";
         	try {
         		// add request into database
     			statement.executeUpdate(sql);
@@ -78,6 +83,12 @@ public class Reimbursement {
     	this.isApproved = isApproved;
     	this.isResolved = true;
     	this.isPending = false;
+    }
+    public void setDescription(String description) {
+    	this.description = description;
+    }
+    public String getDescription() {
+    	return this.description;
     }
     public int getId(){
     	if (isInserted) {

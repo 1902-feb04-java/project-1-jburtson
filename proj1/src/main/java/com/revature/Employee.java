@@ -11,20 +11,22 @@ public class Employee {
     private String firstName;
     private String lastName;
     private boolean isInserted;
+    private boolean isManager;
 
-    public Employee(String username, String password, String firstName, String lastName){
+    public Employee(String username, String password, String firstName, String lastName, boolean isManager){
     	this.username = username;
     	this.password = password;
     	this.firstName = firstName;
     	this.lastName = lastName;
         // need to run insertSelf in order to get id
     	this.isInserted = false;
+    	this.isManager = isManager;
     }
     
     public int insertSelf(Statement statement) {
     	if (!isInserted) {
-    		String sql = "INSERT INTO employees (username, password, first_name, last_name) " +
-                    "VALUES ('"+username+"', '"+password+"', '"+firstName+"', '"+lastName+"')";
+    		String sql = "INSERT INTO employees (username, password, first_name, last_name, isManager) " +
+                    "VALUES ('"+username+"', '"+password+"', '"+firstName+"', '"+lastName+"', '"+isManager+"')";
         	try {
         		// add request into database
     			statement.executeUpdate(sql);
@@ -64,7 +66,7 @@ public class Employee {
     		}
     	}
     	else{
-    		System.err.println("Statment not yet in table");
+    		System.err.println("Statement not yet in table");
     		return false;
     	}
     }

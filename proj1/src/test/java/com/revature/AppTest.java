@@ -34,7 +34,7 @@ public class AppTest {
     	String password = "pass";
     	String firstName = "first";
     	String lastName = "last";
-    	Employee worker = new Employee(username,password,firstName,lastName);
+    	Employee worker = new Employee(username,password,firstName,lastName, false);
     	worker.insertSelf(connection.getStatement());
     	testEmployeeId = worker.getId();
     	//worker.deleteSelf(connection.getStatement());

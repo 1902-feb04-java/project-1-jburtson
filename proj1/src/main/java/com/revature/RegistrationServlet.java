@@ -13,22 +13,29 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet({ "/RegistrationServlet", "/registration" })
 public class RegistrationServlet extends HttpServlet {
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	@Override
+	public void init() {
 		// Load postgresql driver to allow for connecting to database
 		try {
 			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		PrintWriter out = response.getWriter();
+		out.println("<head><link rel=\"stylesheet\" href=\"styles.css\"></head>");
+		
 		String user = request.getParameter("user");
 		String password = request.getParameter("password");
-		String firstName = request.getParameter("firstName");;
-		String lastName = request.getParameter("lastName");;
-		PrintWriter out = response.getWriter();
+		String firstName = request.getParameter("firstName");
+		String lastName = request.getParameter("lastName");
+		boolean isManager = ("manager").equals(request.getParameter("isManager"));
+		
 		out.println("<p> user input "+user+", with password: "+password+" and name "+firstName+" "+lastName+" </p>");
 		
-		Employee worker = new Employee(user, password, firstName, lastName);
+		Employee worker = new Employee(user, password, firstName, lastName, isManager);
 		
 		// try to create SQL connection and add employee to database
 		ConnectionSQL connection;

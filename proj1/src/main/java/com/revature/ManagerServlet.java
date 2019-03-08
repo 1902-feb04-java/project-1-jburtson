@@ -41,59 +41,67 @@ public class ManagerServlet extends HttpServlet {
 			out.println("<p> Oops! Wrong page. Were you looking for the "
 					+ "<a href=\"employee\">employee homepage</a>? </p>");
 		} else {
-			out.println("<p> Welcome to the Manager homepage! </p>");
-			out.println("<p> Approve/deny reimbursement requests (Coming soon!) </p>");
-			out.println("<p> View all reimbursement requests receipt images (Coming soon?) </p>");
-			out.println("<p> View all of your resolved reimbursement requests (Coming soon!) </p>");
-			out.println("<p> View all employees (Coming soon!) </p>");
-			out.println("<p> View all reimbursement requests of a given employee (Coming soon!) </p>");
+			out.println("<h1> Welcome to the Manager homepage, "+getEmployeeName(id)+"! </h1>");
+			out.println("<a href=\"managerEmployeeView\"> View all employees </a>");
 
 			try {
 				ConnectionSQL connection = new ConnectionSQL();
 				Statement statement = connection.getStatement();
 				ResultSet rs;
-
+				
 				// Create reimbursement request table
 				// ---------------------------------------------
 				out.println("<h2>Reimbursement requests:</h2>");
 
 				// change view depending on GET parameters
 				String view = request.getParameter("view");
+				String employeeView = request.getParameter("employeeView");
 				if (view == null)
 					view = "";
 				switch (view) {
 				case "Pending":
 					rs = statement.executeQuery(
-							"SELECT * FROM reimbursement_requests WHERE isPending=TRUE");
+							"SELECT * FROM reimbursement_requests WHERE isPending=TRUE ORDER BY id");
 					break;
 				case "Resolved":
 					rs = statement.executeQuery(
-							"SELECT * FROM reimbursement_requests WHERE isResolved=TRUE AND resolvedBy="+id);
+							"SELECT * FROM reimbursement_requests WHERE isResolved=TRUE AND resolvedBy="+id+" ORDER BY id");
 					break;
 				default:
-					view = "All";
-					rs = statement.executeQuery("SELECT * FROM reimbursement_requests");
+					// sort by employee
+					if (employeeView != null) {
+						int employeeId = Integer.parseInt(employeeView);
+						view = getEmployeeName(employeeId);
+						rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id="+employeeId+" ORDER BY id");
+					}
+					// sort by all
+					else {
+						view = "All";
+						rs = statement.executeQuery("SELECT * FROM reimbursement_requests ORDER BY id");
+					}
 					break;
 				}
 
 				out.println("<table>");
 				out.println("<thead>");
-				out.println("<tr><th colspan=4> " + view + " Reimbursement Requests </th></tr>");
+				out.println("<tr><th colspan=5> " + view + " Reimbursement Requests </th></tr>");
 				out.println("<tr>");
 				out.println("<th> Amount </th>");
 				out.println("<th> Description </th>");
 				out.println("<th> Status </th>");
 				out.println("<th> Resolution </th>");
 				// out.println("<th> Image </th>");
+				out.println("<th> Submitted By </th>");
 				out.println("</tr>");
 				out.println("</thead>");
 				out.println("<tbody>");
 				while (rs.next()) {
-					// int reburId = rs.getInt("id");
+					int reburId = rs.getInt("id");
 					int reburAmount = (int) rs.getInt("amount");
 					String reburDescription = rs.getString("description");
 					boolean reburIsResolved = rs.getBoolean("isResolved");
 					int reburResolvedBy = rs.getInt("resolvedBy");
+					int reburSubmittedBy = rs.getInt("employee_id");
 					if (reburDescription == null)
 						reburDescription = "(blank)";
 					out.println("<tr>");
@@ -101,10 +109,22 @@ public class ManagerServlet extends HttpServlet {
 					out.println("<td> " + reburDescription + " </td>");
 					out.println("<td> " + getStatus(rs) + " </td>");
 					if (reburIsResolved)
-						out.println("<td> Resolved by " + getResolvedBy(reburResolvedBy) + " </td>"); // get name of manager who resolved request
+						out.println("<td> Resolved by " + getEmployeeName(reburResolvedBy) + " </td>"); // get name of manager who resolved request
 					else {
-						out.println("<td> (unresolved) </td>");
+						out.println("<td>");
+						out.println("<form method='post'>");
+						out.println("Approve:<input type='radio' name='resolve' value='y"+reburId+"'>");
+						out.println("Deny:<input type='radio' name='resolve' value='n"+reburId+"' checked>");
+						out.println("<input type='submit'>");
+						out.println("</form>");
+						out.println("</td>");
 					}
+					out.println("<td>");
+					out.println(" " + getEmployeeName(reburSubmittedBy) + " "); // get name of employee who submitted request
+					out.println("<form>");
+					out.println("<button type='submit' name='employeeView' value="+reburSubmittedBy+">View All</button>"); // view by employee button
+					out.println("</form>");
+					out.println("</td>");
 					out.println("</tr>");
 				}
 				rs.close();
@@ -127,6 +147,36 @@ public class ManagerServlet extends HttpServlet {
 		out.println("<a href=\"logout\">Logout</a>");
 		out.close();
 	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		Integer id = (Integer) session.getAttribute("id");
+		try {
+			ConnectionSQL connection = new ConnectionSQL();
+			Statement statement = connection.getStatement();
+
+			StringBuilder resolve = new StringBuilder(request.getParameter("resolve"));
+			System.out.println(resolve);
+			String approvedStatus;
+			if (resolve.charAt(0) == 'y') approvedStatus="TRUE";
+			else if (resolve.charAt(0) == 'n') approvedStatus="FALSE";
+			else approvedStatus="ERROR";
+			
+			resolve.deleteCharAt(0);
+			statement.executeUpdate("UPDATE reimbursement_requests "
+					+ "SET isResolved=TRUE, isPending=FALSE, isApproved="+approvedStatus+", resolvedBy="+id
+					+ " WHERE id="+Integer.parseInt(resolve.toString()));
+			connection.close();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		doGet(request, response);
+	}
 
 	private String getStatus(ResultSet rs) throws SQLException {
 		Boolean isResolved = rs.getBoolean("isResolved");
@@ -143,7 +193,7 @@ public class ManagerServlet extends HttpServlet {
 		}
 		return "";
 	}
-	private String getResolvedBy(int id){
+	private String getEmployeeName(int id){
 		try {
 			ConnectionSQL connection = new ConnectionSQL();
 			Statement statement = connection.getStatement();

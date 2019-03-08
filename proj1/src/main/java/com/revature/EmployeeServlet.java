@@ -43,9 +43,6 @@ public class EmployeeServlet extends HttpServlet {
 		// employee is logged in
 		else {
 			out.println("<h1> Welcome to the Employee homepage! </h1>");
-			// out.println("<p> Upload an image of your receipt (Coming soon?) </p>");
-			// out.println("<p> View your info (Coming soon!) </p>");
-			// out.println("<p> Receive an email when a request is resolved! (Coming soon?) </p>");
 
 			try {
 				ConnectionSQL connection = new ConnectionSQL();
@@ -75,14 +72,14 @@ public class EmployeeServlet extends HttpServlet {
 				if (view == null) view = "";
 				switch (view) {
 				case "Pending":
-					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id + " AND isPending=TRUE");
+					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id + " AND isPending=TRUE ORDER BY id");
 					break;
 				case "Resolved":
-					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id + " AND isResolved=TRUE");
+					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id + " AND isResolved=TRUE ORDER BY id");
 					break;
 				default:
 					view = "All";
-					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id);
+					rs = statement.executeQuery("SELECT * FROM reimbursement_requests WHERE employee_id=" + id + "  ORDER BY id");
 					break;
 				}
 
@@ -115,10 +112,10 @@ public class EmployeeServlet extends HttpServlet {
 					else out.println("<td> (unresolved) </td>");
 					out.println("</tr>");
 				}
-				rs.close();
 				out.println("</tbody>");
 				out.println("</table>");
 				
+				rs.close();
 				connection.close();
 			} catch (SQLException e) {
 				System.err.println("UH OH, CONNECTION ERROR");

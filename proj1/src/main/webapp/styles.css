@@ -1,6 +1,9 @@
 table, td {
 	border: 1px solid #333;
 }
+td, th {
+	text-align: center;
+}
 
 thead, tfoot {
 	background-color: #333;
